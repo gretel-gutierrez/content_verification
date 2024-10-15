@@ -30,7 +30,6 @@ in the body of the content.
 #### How it works
 
 - When an editor creates or edits an article, the module checks the word count, readability score, and keyword presence.
-
 - If the article does not meet the required standards, the editor will see an error message, indicating what needs to be improved (e.g., “The content readability score is too low”).
 
 #### Reports
@@ -39,10 +38,10 @@ The module provides a detailed report on content verification. You can access th
 /admin/config/content/content-verification
 
 The report shows:
-	•	The Flesch-Kincaid readability score for each article.
-	•	The expected readability score based on the settings.
-	•	The status of keywords, indicating if any keywords are missing.
-	•	The final status of the content verification (pass/fail).
+- The Flesch-Kincaid readability score for each article.
+- The expected readability score based on the settings.
+- The status of keywords, indicating if any keywords are missing.
+- The final status of the content verification (pass/fail).
 
 #### Version Compatibility
 
