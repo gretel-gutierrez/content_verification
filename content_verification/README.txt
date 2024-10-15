@@ -33,7 +33,19 @@ in the body of the content.
 
 - If the article does not meet the required standards, the editor will see an error message, indicating what needs to be improved (e.g., “The content readability score is too low”).
 
+#### Reports
+
+The module provides a detailed report on content verification. You can access the report at:
+/admin/config/content/content-verification
+
+The report shows:
+	•	The Flesch-Kincaid readability score for each article.
+	•	The expected readability score based on the settings.
+	•	The status of keywords, indicating if any keywords are missing.
+	•	The final status of the content verification (pass/fail).
+
 #### Version Compatibility
+
 | Content Verification version | Drupal core | PHP  | Drush |
 |------------------------------|-------------|------|-------|
 | 1.0+                         | 10          | 8.1+ | 12+   |
