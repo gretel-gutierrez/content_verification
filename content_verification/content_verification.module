@@ -1,0 +1,135 @@
+<?php
+
+use Drupal\Core\Form\FormStateInterface;
+
+/**
+ * Modifies the node form to add custom validation for articles.
+ * This includes validation for word count, readability, and tags.
+ */
+function content_verification_form_node_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+    $node = $form_state->getFormObject()->getEntity();
+  
+    if ($node->getType() == 'article') {
+      // Add custom validation functions.
+      $form['#validate'][] = 'content_verification_validate_body_word_count';
+      $form['#validate'][] = 'content_verification_validate_readability';
+      $form['#validate'][] = 'content_verification_validate_tags'; 
+    }
+  }
+
+/**
+ * Validates the word count of the 'body' field.
+ * This ensures the body has a minimum number of words based on the module's configuration.
+ */
+function content_verification_validate_body_word_count($form, FormStateInterface $form_state) {
+    // Retrieve the 'body' field value.
+    $body_value = $form_state->getValue(['body', 0, 'value']);
+  
+    // Remove HTML tags to count only plain text.
+    $plain_text = strip_tags($body_value);
+  
+    // Count the words in the text.
+    $word_count = str_word_count($plain_text);
+  
+    // Get the minimum word count from the configuration, defaulting to 300 if not set.
+    $min_word_count = \Drupal::config('content_verification.settings')->get('min_word_count') ?? 300;
+  
+    // If the word count is below the minimum, show an error message.
+    if ($word_count < $min_word_count) {
+      $form_state->setErrorByName('body', t('The body field must contain at least @min words. Currently, it has @count words.', [
+        '@min' => $min_word_count,
+        '@count' => $word_count,
+      ]));
+    }
+}
+  
+/**
+ * Custom validation for Flesch-Kincaid readability.
+ */
+function content_verification_validate_readability($form, FormStateInterface $form_state) {
+
+    // Get body value from the form.
+    $body_value = $form_state->getValue(['body', 0, 'value']);
+  
+    // Get the Flesch-Kincaid scale setting.
+    $config = \Drupal::config('content_verification.settings');
+    $flesch_kincaid_scale = $config->get('flesch_kincaid_scale') ?? '60-70';
+  
+    // Call the service to calculate Flesch-Kincaid score.
+    $helper = \Drupal::service('content_verification.helper');    
+    $flesch_kincaid_score = $helper->calculateFleschKincaid($body_value);
+  
+    // Determine the minimum required score based on the scale.
+    switch ($flesch_kincaid_scale) {
+      case '90-100':
+        $min_score = 90;
+        break;
+      case '60-70':
+        $min_score = 60;
+        break;
+      case '30-50':
+        $min_score = 30;
+        break;
+      case '0-30':
+        $min_score = 0;
+        break;
+      default:
+        $min_score = 60;
+    }
+  
+    // If the score is below the minimum, return an error.
+    if ($flesch_kincaid_score < $min_score) {
+      $form_state->setErrorByName('body', t('The content readability score is too low. Expected a score of at least @min_score for the selected scale (@scale), but the current score is @current_score.', [
+        '@min_score' => $min_score,
+        '@scale' => $flesch_kincaid_scale,
+        '@current_score' => $flesch_kincaid_score,
+      ]));
+    }
+  }
+
+/**
+ * Validates that all selected tags from field_tags are present in the body.
+ */
+function content_verification_validate_tags($form, FormStateInterface $form_state) {
+    // Get the body field value.
+    $body_value = $form_state->getValue(['body', 0, 'value']);
+    
+    // Get the selected tags from field_tags.
+    $tags = $form_state->getValue('field_tags');
+    
+    // Skip validation if no tags are selected.
+    if (empty($tags['target_id'])) {
+      return;
+    }
+
+    // Extract tag IDs without loading all terms.
+    $tag_ids = array_column($tags['target_id'], 'target_id');
+    $tag_names = [];
+    
+    if (!empty($tag_ids)) {
+      // Load only the required taxonomy terms by their IDs.
+      $terms = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->loadMultiple($tag_ids);
+      
+      // Retrieve term names.
+      foreach ($terms as $term) {
+        if ($term) {
+          $tag_names[] = $term->getName();
+        }
+      }
+    }
+
+    // Check if all tags are present in the body content.
+    $missing_tags = [];
+    foreach ($tag_names as $tag_name) {
+      if (stripos($body_value, $tag_name) === FALSE) {
+        $missing_tags[] = $tag_name;
+      }
+    }
+
+    // Set an error if any tags are missing.
+    if (!empty($missing_tags)) {
+      $form_state->setErrorByName('body', t('The following tags are missing from the content: @tags', [
+        '@tags' => implode(', ', $missing_tags),
+      ]));
+    }
+}

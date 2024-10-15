@@ -1,0 +1,15 @@
+content_verification.content_validation_settings:
+  path: '/admin/config/content/content-verification'
+  defaults:
+    _form: '\Drupal\content_verification\Form\ContentValidationSettingsForm'
+    _title: 'Content Verification Settings'
+  requirements:
+    _permission: 'administer site configuration'
+
+content_verification.reports:
+  path: '/admin/reports/content-verification'
+  defaults:
+    _controller: '\Drupal\content_verification\Controller\ContentVerificationController::report'
+    _title: 'Content Verification Report'
+  requirements:
+    _permission: 'administer site configuration'

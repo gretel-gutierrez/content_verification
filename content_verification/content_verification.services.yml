@@ -1,0 +1,4 @@
+services:
+  content_verification.helper:
+    class: 'Drupal\content_verification\Services\ContentVerificationHelper'
+    arguments: []

@@ -1,0 +1,6 @@
+content_verification.content_validation_settings:
+  title: 'Content Verification Settings'
+  description: 'Configure the content validation rules like minimum word count.'
+  parent: system.admin_config_content
+  route_name: content_verification.content_validation_settings
+  weight: 100

@@ -1,0 +1,8 @@
+name: 'Content Verification Module'
+type: module
+description: 'A module to validate content length, keywords, and readability before publishing.'
+core_version_requirement: ^10
+version: 1.0
+package: SEO
+dependencies:
+  - node
